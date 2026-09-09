@@ -50,3 +50,4 @@ backend/data/*.sqlite3
 # Logs
 *.log
 logs/
+backend/*.db
