@@ -622,7 +622,7 @@ def _has_meaningful_evidence(query: str, chunks: List[RetrievedChunk]) -> bool:
 
 
 def _expand_retrieval_query(query: str, processed_query: str) -> str:
-    """Add stable conceptual terms for definition questions over OCR text."""
+    """Add stable conceptual terms for definition questions over the retrieved context."""
     normalized = query.lower()
     if "induction" in normalized and any(
         phrase in normalized

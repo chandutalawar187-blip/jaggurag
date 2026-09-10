@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileText, Trash2, RefreshCw, Database, CheckCircle2, AlertCircle, Loader2, Eye, X, ExternalLink } from 'lucide-react';
-import { getDocuments, uploadDocument, deleteDocument, reindexDocument, reindexAll, getDocumentContentUrl, getDocumentText, uploadHandwrittenDocument, queryHandwrittenDocument, getHandwrittenDocument } from '../services/api';
-import type { DocumentItem, OCRRAGDocument } from '../types';
+import { getDocuments, uploadDocument, deleteDocument, reindexDocument, reindexAll, getDocumentContentUrl, getDocumentText } from '../services/api';
+import type { DocumentItem } from '../types';
 
 export default function KnowledgeBasePage() {
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
@@ -18,25 +18,6 @@ export default function KnowledgeBasePage() {
   const [documentText, setDocumentText] = useState<string | null>(null);
   const [viewerLoading, setViewerLoading] = useState(false);
   const [viewerError, setViewerError] = useState('');
-  const [ocrDocument, setOcrDocument] = useState<OCRRAGDocument | null>(null);
-  const [ocrQuestion, setOcrQuestion] = useState('');
-  const [ocrAnswer, setOcrAnswer] = useState('');
-  const [ocrBusy, setOcrBusy] = useState(false);
-  const [ocrError, setOcrError] = useState('');
-
-  useEffect(() => {
-    if (!ocrDocument || !['processing'].includes(ocrDocument.status)) return;
-    const timer = window.setInterval(async () => {
-      try {
-        const latest = await getHandwrittenDocument(ocrDocument.id);
-        setOcrDocument(latest);
-        if (latest.status !== 'processing') window.clearInterval(timer);
-      } catch (e) {
-        console.error('Failed to fetch OCR progress:', e);
-      }
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [ocrDocument?.id, ocrDocument?.status]);
 
   const fetchDocs = async () => {
     try {
@@ -117,33 +98,6 @@ export default function KnowledgeBasePage() {
       await reindexAll();
       fetchDocs();
     } catch (e) { console.error(e); }
-  };
-
-  const handleHandwrittenUpload = async (file: File) => {
-    setOcrBusy(true);
-    setOcrError('');
-    setOcrAnswer('');
-    try {
-      setOcrDocument(await uploadHandwrittenDocument(file));
-    } catch (e: any) {
-      setOcrError(e.response?.data?.detail || e.message || 'Handwritten document processing failed.');
-    } finally {
-      setOcrBusy(false);
-    }
-  };
-
-  const handleHandwrittenQuery = async () => {
-    if (!ocrDocument || !ocrQuestion.trim()) return;
-    setOcrBusy(true);
-    setOcrError('');
-    try {
-      const result = await queryHandwrittenDocument(ocrDocument.id, ocrQuestion.trim());
-      setOcrAnswer(result.answer);
-    } catch (e: any) {
-      setOcrError(e.response?.data?.detail || e.message || 'OCR-RAG query failed.');
-    } finally {
-      setOcrBusy(false);
-    }
   };
 
   const openViewer = async (doc: DocumentItem) => {
@@ -228,67 +182,6 @@ export default function KnowledgeBasePage() {
               <p className="font-mono text-xs text-[#1E1E1E]/70">or click to browse • PDF, DOCX, CSV, XLSX, TXT, MD, PPTX, JSON, Images</p>
             </>
           )}
-        </div>
-
-        <div className="bg-[#F8A348] border-2 border-[#1E1E1E] shadow-[4px_4px_0px_#1E1E1E] p-5 mb-6">
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <div>
-              <p className="font-mono text-[10px] font-bold uppercase tracking-widest">HANDWRITTEN OCR-RAG</p>
-              <p className="font-sans text-xs font-medium mt-1">Upload a handwritten PDF or image, then ask a grounded question.</p>
-            </div>
-            <label className="btn-secondary text-[10px] uppercase cursor-pointer">
-              {ocrBusy ? 'Processing...' : 'Choose document'}
-              <input
-                type="file"
-                accept=".pdf,.png,.jpg,.jpeg"
-                className="hidden"
-                disabled={ocrBusy}
-                onChange={event => {
-                  const file = event.target.files?.[0];
-                  if (file) void handleHandwrittenUpload(file);
-                  event.currentTarget.value = '';
-                }}
-              />
-            </label>
-          </div>
-          {ocrDocument && (
-            <div className="bg-white border-2 border-[#1E1E1E] p-3">
-              <p className="font-mono text-xs font-bold">{ocrDocument.filename} — {ocrDocument.status}</p>
-              {ocrDocument.status === 'processing' && (
-                <div className="mt-2">
-                  <div className="flex justify-between font-mono text-[10px] font-bold uppercase">
-                    <span>{ocrDocument.progress_phase}</span>
-                    <span>{ocrDocument.progress}%</span>
-                  </div>
-                  <div className="mt-1 h-3 w-full border border-[#1E1E1E] bg-[#E4E2DD]">
-                    <div
-                      className="h-full bg-[#DB4A2B] transition-all duration-500"
-                      style={{ width: `${Math.max(0, Math.min(100, ocrDocument.progress))}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-              <div className="flex gap-2 mt-3">
-                <input
-                  value={ocrQuestion}
-                  onChange={event => setOcrQuestion(event.target.value)}
-                  onKeyDown={event => { if (event.key === 'Enter') void handleHandwrittenQuery(); }}
-                  placeholder="Ask about this handwritten document..."
-                  className="input-field flex-1 text-xs"
-                  disabled={ocrBusy || ocrDocument.status !== 'completed'}
-                />
-                <button
-                  onClick={() => void handleHandwrittenQuery()}
-                  disabled={ocrBusy || ocrDocument.status !== 'completed' || !ocrQuestion.trim()}
-                  className="btn-primary text-xs"
-                >
-                  Ask
-                </button>
-              </div>
-              {ocrAnswer && <p className="mt-3 bg-[#E4E2DD] border border-[#1E1E1E] p-3 text-xs leading-relaxed">{ocrAnswer}</p>}
-            </div>
-          )}
-          {ocrError && <p className="mt-2 text-xs font-bold text-red-700">{ocrError}</p>}
         </div>
 
         {/* Upload Progress Indicator */}

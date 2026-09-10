@@ -4,7 +4,6 @@ import axios from 'axios';
 import type {
   ChatRequest, ChatResponse, DocumentListResponse, DocumentItem,
   HealthStatus, ModelsResponse, StatsData, Conversation,
-  OCRRAGDocument, OCRRAGAnswer,
 } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
@@ -63,35 +62,6 @@ export const uploadDocument = async (
       }
     },
   });
-  return data;
-};
-
-export const uploadHandwrittenDocument = async (file: File): Promise<OCRRAGDocument> => {
-  const formData = new FormData();
-  formData.append('file', file);
-  const { data } = await api.post<OCRRAGDocument>('/ocr-rag/documents', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-    timeout: 300000,
-  });
-  return data;
-};
-
-export const queryHandwrittenDocument = async (
-  documentId: string,
-  question: string,
-): Promise<OCRRAGAnswer> => {
-  const { data } = await api.post<OCRRAGAnswer>(
-    `/ocr-rag/documents/${encodeURIComponent(documentId)}/query`,
-    { question },
-    { timeout: 300000 },
-  );
-  return data;
-};
-
-export const getHandwrittenDocument = async (documentId: string): Promise<OCRRAGDocument> => {
-  const { data } = await api.get<OCRRAGDocument>(
-    `/ocr-rag/documents/${encodeURIComponent(documentId)}`,
-  );
   return data;
 };
 

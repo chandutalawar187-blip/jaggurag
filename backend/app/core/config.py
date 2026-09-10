@@ -42,10 +42,6 @@ class Settings(BaseSettings):
     UPLOAD_PATH: str = str(_BACKEND_DIR / "uploads")
     DB_PATH: str = str(_BACKEND_DIR / "nexus.db")
     CONVERSATIONS_DB_PATH: str = str(_BACKEND_DIR / "data" / "conversations.db")
-    OCR_RAG_DB_PATH: str = str(_BACKEND_DIR / "data" / "ocr_rag.db")
-    OCR_RAG_COLLECTION: str = "nexus_ocr_rag_documents"
-    OCR_RAG_PROVIDER: str = "tesseract"
-    OCR_RAG_VISION_MODEL: str = ""
 
     # ── Embeddings ──────────────────────────────────
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"

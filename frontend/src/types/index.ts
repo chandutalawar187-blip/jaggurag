@@ -117,21 +117,3 @@ export interface StatsData {
   documents_by_type: DocsByType[];
 }
 
-export interface OCRRAGDocument {
-  id: string;
-  filename: string;
-  original_path: string;
-  status: 'processing' | 'completed' | 'failed';
-  page_count: number;
-  chunk_count: number;
-  progress: number;
-  progress_phase: string;
-  error_message: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface OCRRAGAnswer {
-  answer: string;
-  sources: Array<{ page: number; chunk_id: string }>;
-}

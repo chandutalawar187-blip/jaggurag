@@ -27,8 +27,6 @@ async def lifespan(app: FastAPI):
     init_db()
     from app.models.conversation_db import init_conversation_db
     init_conversation_db()
-    from app.ocr_rag.storage import init_storage as init_ocr_rag_storage
-    init_ocr_rag_storage()
 
     # 2. Initialize ChromaDB
     from app.models.database import get_chroma_client
@@ -101,8 +99,6 @@ def create_app() -> FastAPI:
     from app.api.routes_models import router as models_router
     from app.api.routes_reindex import router as reindex_router
     from app.api.routes_conversations import router as conversations_router
-    from app.api.routes_ocr import router as ocr_router
-    from app.api.routes_ocr_rag import router as ocr_rag_router
 
     app.include_router(health_router, prefix="/api", tags=["Health"])
     app.include_router(chat_router, prefix="/api", tags=["Chat"])
@@ -111,8 +107,6 @@ def create_app() -> FastAPI:
     app.include_router(models_router, prefix="/api", tags=["Models"])
     app.include_router(reindex_router, prefix="/api", tags=["Reindex"])
     app.include_router(conversations_router, prefix="/api", tags=["Conversations"])
-    app.include_router(ocr_router, prefix="/api", tags=["OCR"])
-    app.include_router(ocr_rag_router, prefix="/api", tags=["OCR-RAG"])
 
     return app
 

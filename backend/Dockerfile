@@ -6,8 +6,6 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
-    tesseract-ocr \
-    tesseract-ocr-eng \
     libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
